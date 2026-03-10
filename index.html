@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>厨房助手 - AI 菜谱</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+      background: #fdf6ec;
+      color: #2c1810;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(192,57,43,0.3);
+    }
+    .header-inner {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.3); }
+    .header-title { color: #fff; font-size: 20px; font-family: 'Noto Serif SC', serif; font-weight: 700; letter-spacing: 2px; }
+    .header-sub { color: rgba(255,255,255,0.75); font-size: 11px; letter-spacing: 1px; }
+
+    /* ── Pages ── */
+    .page { display: none; max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+    .page.active { display: block; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, #c0392b 0%, #e67e22 100%);
+      padding: 36px 24px 52px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -20px; left: -20px;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .hero-icon { font-size: 52px; margin-bottom: 12px; }
+    .hero h1 { color: #fff; font-size: 24px; font-family: 'Noto Serif SC', serif; font-weight: 700; margin-bottom: 8px; letter-spacing: 2px; }
+    .hero p { color: rgba(255,255,255,0.85); font-size: 14px; line-height: 1.6; }
+
+    /* ── Cards ── */
+    .cards { padding: 24px 16px 8px; display: flex; flex-direction: column; gap: 16px; margin-top: -24px; }
+    .card {
+      background: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(192,57,43,0.1);
+      transition: transform 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(192,57,43,0.18); }
+    .card-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+    }
+    .card-icon.red { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+    .card-icon.orange { background: linear-gradient(135deg, #e67e22, #f39c12); }
+    .card-title { font-size: 17px; font-weight: 600; color: #2c1810; margin-bottom: 4px; font-family: 'Noto Serif SC', serif; }
+    .card-desc { font-size: 13px; color: #888; line-height: 1.5; }
+    .card-arrow { margin-left: auto; color: #c0392b; font-size: 22px; flex-shrink: 0; }
+
+    /* ── Quick Tags ── */
+    .quick-section { padding: 0 16px 16px; }
+    .quick-label { font-size: 13px; color: #aaa; margin-bottom: 10px; letter-spacing: 1px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      background: #fff3ed;
+      border: 1px solid #fcd5b5;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: #c0392b;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .tag:hover { background: #ffe4d0; }
+
+    /* ── Inner Pages ── */
+    .inner { padding: 24px 16px; }
+    .page-title { font-family: 'Noto Serif SC', serif; font-size: 20px; color: #2c1810; margin-bottom: 6px; }
+    .page-sub { font-size: 13px; color: #999; margin-bottom: 20px; }
+
+    /* ── Input row ── */
+    .input-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .main-input {
+      flex: 1;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 2px solid #f0d5c5;
+      font-size: 15px;
+      background: #fff;
+      outline: none;
+      color: #2c1810;
+      font-family: 'Noto Sans SC', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .main-input:focus { border-color: #c0392b; }
+    .search-btn {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      border: none; border-radius: 12px;
+      padding: 0 20px;
+      color: #fff; font-size: 15px;
+      cursor: pointer; font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .search-btn:hover { opacity: 0.9; }
+    .add-btn {
+      background: linear-gradient(135deg, #e67e22, #f39c12);
+      border: none; border-radius: 12px;
+      padding: 0 18px;
+      color: #fff; font-size: 22px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .add-btn:hover { opacity: 0.9; }
+
+    /* ── Ingredient tags ── */
+    .ingredient-section { margin-bottom: 20px; }
+    .ingredient-label { font-size: 13px; color: #aaa; margin-bottom: 8px; }
+    .ingredient-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ingredient-tag {
+      background: #fff3ed;
+      border: 1px solid #fcd5b5;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: #c0392b;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .remove-btn {
+      background: none; border: none;
+      color: #e74c3c; cursor: pointer;
+      font-size: 15px; line-height: 1; padding: 0;
+    }
+
+    /* ── Submit btn ── */
+    .submit-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #c0392b, #e67e22);
+      border: none; border-radius: 12px;
+      color: #fff; font-size: 16px; font-weight: 600;
+      cursor: pointer;
+      font-family: 'Noto Serif SC', serif;
+      letter-spacing: 1px;
+      transition: opacity 0.15s;
+    }
+    .submit-btn:disabled { background: #ddd; cursor: not-allowed; }
+    .submit-btn:not(:disabled):hover { opacity: 0.9; }
+
+    /* ── Result page ── */
+    .result-title { font-family: 'Noto Serif SC', serif; font-size: 18px; color: #2c1810; margin-bottom: 20px; line-height: 1.5; }
+    .result-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 18px;
+      box-shadow: 0 4px 20px rgba(192,57,43,0.08);
+      border: 1px solid #f5e0d0;
+      min-height: 120px;
+    }
+    .loading { text-align: center; padding: 30px 0; }
+    .loading-icon { font-size: 32px; margin-bottom: 12px; display: inline-block; animation: spin 1.2s linear infinite; }
+    .loading-text { color: #aaa; font-size: 14px; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ── Result content ── */
+    .result-content { font-size: 14px; color: #3a2015; line-height: 1.9; }
+    .result-content .rh3 { color: #c0392b; margin: 16px 0 6px; font-size: 17px; font-family: 'Noto Serif SC', serif; }
+    .result-content .rp { margin: 5px 0; }
+    .result-content .rl { margin: 4px 0; padding-left: 12px; }
+
+    /* ── API key notice ── */
+    .api-notice {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #795548;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .api-notice strong { color: #c0392b; }
+    .api-key-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #f0d5c5;
+      font-size: 13px;
+      background: #fff;
+      outline: none;
+      color: #2c1810;
+      margin-top: 8px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="header-inner">
+    <button class="back-btn" id="backBtn" onclick="goHome()">←</button>
+    <div>
+      <div class="header-title">🍜 厨房助手</div>
+      <div class="header-sub">AI 菜谱 · 食材推荐</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOME PAGE ══ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-icon">🍽️</div>
+    <h1>今天吃什么？</h1>
+    <p>查菜谱 · 或告诉我你有什么食材</p>
+  </div>
+
+  <div class="cards">
+    <button class="card" onclick="showPage('search')">
+      <div class="card-icon red">📖</div>
+      <div>
+        <div class="card-title">查询菜谱</div>
+        <div class="card-desc">输入菜名，获取详细的食材清单和烹饪步骤</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </button>
+
+    <button class="card" onclick="showPage('ingredients')">
+      <div class="card-icon orange">🥦</div>
+      <div>
+        <div class="card-title">食材推荐</div>
+        <div class="card-desc">告诉我你有什么食材，AI 帮你想做什么菜</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </button>
+  </div>
+
+  <div class="quick-section">
+    <div class="quick-label">热门菜肴</div>
+    <div class="tags" id="quickTags"></div>
+  </div>
+</div>
+
+<!-- ══ SEARCH PAGE ══ -->
+<div class="page" id="page-search">
+  <div class="inner">
+    <div class="page-title">查询菜谱</div>
+    <div class="page-sub">输入你想做的菜名</div>
+    <div class="input-row">
+      <input class="main-input" id="searchInput" placeholder="例如：红烧肉、番茄炒蛋..." onkeydown="if(event.key==='Enter') doSearch()" />
+      <button class="search-btn" onclick="doSearch()">搜索</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INGREDIENTS PAGE ══ -->
+<div class="page" id="page-ingredients">
+  <div class="inner">
+    <div class="page-title">食材推荐</div>
+    <div class="page-sub">输入你现有的食材，AI 帮你决定做什么</div>
+    <div class="input-row">
+      <input class="main-input" id="ingInput" placeholder="例如：鸡蛋、番茄、豆腐..." onkeydown="if(event.key==='Enter') addIngredient()" />
+      <button class="add-btn" onclick="addIngredient()">+</button>
+    </div>
+    <div class="ingredient-section" id="ingSection" style="display:none">
+      <div class="ingredient-label">已添加的食材</div>
+      <div class="ingredient-tags" id="ingTags"></div>
+    </div>
+    <button class="submit-btn" id="ingSubmitBtn" disabled onclick="doIngredients()">✨ 帮我想想做什么菜</button>
+  </div>
+</div>
+
+<!-- ══ RESULT PAGE ══ -->
+<div class="page" id="page-result">
+  <div class="inner">
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-box" id="resultBox">
+      <div class="loading" id="loadingEl">
+        <div class="loading-icon">🍳</div>
+        <div class="loading-text">AI 正在思考中...</div>
+      </div>
+      <div class="result-content" id="resultContent" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  let ingredients = [];
+  const API_KEY_STORAGE = 'recipe_api_key';
+
+  // ── Quick tags ──
+  const QUICK_DISHES = ['宫保鸡丁','红烧肉','番茄炒蛋','麻婆豆腐','糖醋排骨','清蒸鱼','回锅肉','蛋炒饭'];
+  const tagsEl = document.getElementById('quickTags');
+  QUICK_DISHES.forEach(dish => {
+    const btn = document.createElement('button');
+    btn.className = 'tag';
+    btn.textContent = dish;
+    btn.onclick = () => quickSearch(dish);
+    tagsEl.appendChild(btn);
+  });
+
+  // ── Navigation ──
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('backBtn').style.display = name === 'home' ? 'none' : 'flex';
+    window.scrollTo(0, 0);
+  }
+
+  function goHome() {
+    ingredients = [];
+    renderIngredients();
+    document.getElementById('searchInput').value = '';
+    document.getElementById('ingInput').value = '';
+    showPage('home');
+  }
+
+  // ── API Key management ──
+  function getApiKey() {
+    return localStorage.getItem(API_KEY_STORAGE) || '';
+  }
+  function saveApiKey(key) {
+    localStorage.setItem(API_KEY_STORAGE, key);
+  }
+
+  // ── Search ──
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    const prompt = `请给我提供"${q}"的详细菜谱，包括：\n1. 所需食材（含用量）\n2. 烹饪步骤（分步说明）\n3. 小贴士或注意事项\n请用清晰的格式回复，语言简洁实用。`;
+    callClaude(prompt, `${q} 的菜谱`);
+  }
+
+  function quickSearch(dish) {
+    const prompt = `请给我提供"${dish}"的详细菜谱，包括：\n1. 所需食材（含用量）\n2. 烹饪步骤（分步说明）\n3. 小贴士或注意事项\n请用清晰的格式回复，语言简洁实用。`;
+    callClaude(prompt, `${dish} 的菜谱`);
+  }
+
+  // ── Ingredients ──
+  function addIngredient() {
+    const val = document.getElementById('ingInput').value.trim();
+    if (val && !ingredients.includes(val)) {
+      ingredients.push(val);
+      document.getElementById('ingInput').value = '';
+      renderIngredients();
+    }
+  }
+
+  function removeIngredient(item) {
+    ingredients = ingredients.filter(i => i !== item);
+    renderIngredients();
+  }
+
+  function renderIngredients() {
+    const section = document.getElementById('ingSection');
+    const tagsEl = document.getElementById('ingTags');
+    const btn = document.getElementById('ingSubmitBtn');
+    section.style.display = ingredients.length ? 'block' : 'none';
+    btn.disabled = ingredients.length === 0;
+    tagsEl.innerHTML = '';
+    ingredients.forEach(item => {
+      const span = document.createElement('span');
+      span.className = 'ingredient-tag';
+      span.innerHTML = `${item} <button class="remove-btn" onclick="removeIngredient('${item}')">×</button>`;
+      tagsEl.appendChild(span);
+    });
+  }
+
+  function doIngredients() {
+    if (!ingredients.length) return;
+    const prompt = `我现在有这些食材：${ingredients.join('、')}。\n请推荐3-5道可以用这些食材做的菜，每道菜给出：\n1. 菜名\n2. 需要额外准备的调料或配料\n3. 简单的烹饪步骤\n请优先推荐用现有食材就能完成或只需少量补充的菜肴。`;
+    callClaude(prompt, `用 ${ingredients.join('、')} 能做什么菜？`);
+  }
+
+  // ── Call Claude API ──
+  async function callClaude(prompt, title) {
+    const apiKey = getApiKey();
+
+    showPage('result');
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('loadingEl').style.display = 'block';
+    document.getElementById('resultContent').style.display = 'none';
+    document.getElementById('resultContent').innerHTML = '';
+
+    if (!apiKey) {
+      document.getElementById('loadingEl').style.display = 'none';
+      document.getElementById('resultContent').style.display = 'block';
+      document.getElementById('resultContent').innerHTML = `
+        <div class="api-notice">
+          <strong>需要配置 API Key</strong><br>
+          请前往 <a href="https://console.anthropic.com" target="_blank" style="color:#c0392b">console.anthropic.com</a> 获取你的 API Key，然后粘贴到下方：
+          <input class="api-key-input" id="apiKeyInput" placeholder="sk-ant-..." />
+          <button class="submit-btn" style="margin-top:10px;font-size:14px" onclick="saveAndRetry('${encodeURIComponent(prompt)}','${encodeURIComponent(title)}')">保存并继续</button>
+        </div>`;
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error.message || '请求失败');
+      }
+
+      const text = (data.content || []).map(b => b.text || '').join('');
+      renderResult(text);
+    } catch (e) {
+      renderResult(`❌ 请求失败：${e.message}\n\n请检查 API Key 是否正确，或网络是否正常。`);
+    }
+  }
+
+  function saveAndRetry(encodedPrompt, encodedTitle) {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) return alert('请输入 API Key');
+    saveApiKey(key);
+    callClaude(decodeURIComponent(encodedPrompt), decodeURIComponent(encodedTitle));
+  }
+
+  // ── Render result text ──
+  function renderResult(text) {
+    document.getElementById('loadingEl').style.display = 'none';
+    const el = document.getElementById('resultContent');
+    el.style.display = 'block';
+    el.innerHTML = '';
+
+    text.split('\n').forEach(line => {
+      if (/^#+\s/.test(line)) {
+        const h = document.createElement('div');
+        h.className = 'rh3';
+        h.textContent = line.replace(/^#+\s/, '');
+        el.appendChild(h);
+      } else if (/^\d+\./.test(line) || line.startsWith('- ') || line.startsWith('• ')) {
+        const p = document.createElement('p');
+        p.className = 'rl';
+        p.textContent = (line.startsWith('- ') || line.startsWith('• ')) ? '• ' + line.slice(2) : line;
+        el.appendChild(p);
+      } else if (line.trim() === '') {
+        el.appendChild(document.createElement('br'));
+      } else {
+        const p = document.createElement('p');
+        p.className = 'rp';
+        p.textContent = line;
+        el.appendChild(p);
+      }
+    });
+  }
+</script>
+</body>
+</html>
