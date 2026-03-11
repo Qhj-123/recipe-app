@@ -310,6 +310,72 @@
       margin-left: 6px;
       vertical-align: middle;
     }
+
+    /* ── Restaurant ── */
+    .card-icon.green { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+    .restaurant-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 12px rgba(39,174,96,0.08);
+      border: 1px solid #d5f0e0;
+      margin-bottom: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .restaurant-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,0.15); }
+    .restaurant-card-name { font-family: 'Noto Serif SC', serif; font-size: 16px; color: #2c1810; margin-bottom: 6px; }
+    .restaurant-card-dishes { font-size: 13px; color: #888; line-height: 1.6; }
+    .restaurant-card-del {
+      position: absolute; top: 12px; right: 12px;
+      background: none; border: none;
+      color: #ddd; font-size: 18px; cursor: pointer;
+      transition: color 0.15s;
+    }
+    .restaurant-card-del:hover { color: #e74c3c; }
+    .restaurant-empty { text-align: center; padding: 40px 20px; color: #bbb; font-size: 14px; }
+    .restaurant-empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .dish-tag {
+      display: inline-block;
+      background: #eafaf1;
+      border: 1px solid #a9dfbf;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #27ae60;
+      margin: 3px 3px 0 0;
+    }
+    .dish-tags-row { margin-top: 8px; }
+    .restaurant-detail-name {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 22px;
+      color: #2c1810;
+      margin-bottom: 6px;
+    }
+    .restaurant-detail-section { margin-top: 20px; }
+    .restaurant-detail-label { font-size: 13px; color: #aaa; margin-bottom: 10px; letter-spacing: 1px; }
+    .add-dish-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .dish-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dish-item {
+      background: #eafaf1;
+      border: 1px solid #a9dfbf;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: #27ae60;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .green-btn {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      border: none; border-radius: 12px;
+      padding: 0 18px;
+      color: #fff; font-size: 22px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .green-btn:hover { opacity: 0.9; }
+    .submit-btn.green { background: linear-gradient(135deg, #27ae60, #2ecc71); }
   </style>
 </head>
 <body>
@@ -357,6 +423,15 @@
       <div>
         <div class="card-title">常吃菜谱</div>
         <div class="card-desc">收藏的菜谱和自己添加的菜谱</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </button>
+
+    <button class="card" onclick="showPage('restaurants')">
+      <div class="card-icon green">🏪</div>
+      <div>
+        <div class="card-title">我的餐厅</div>
+        <div class="card-desc">记录常去的饭馆和常点的菜品</div>
       </div>
       <div class="card-arrow">›</div>
     </button>
@@ -421,6 +496,67 @@
     <div class="page-sub">收藏和自定义的菜谱</div>
     <button class="submit-btn" style="margin-bottom:20px;font-size:14px" onclick="showPage('add-recipe')">＋ 添加自定义菜谱</button>
     <div id="favList"></div>
+  </div>
+</div>
+
+<!-- ══ RESTAURANTS PAGE ══ -->
+<div class="page" id="page-restaurants">
+  <div class="inner">
+    <div class="page-title">我的餐厅</div>
+    <div class="page-sub">记录常去的饭馆和常点菜品</div>
+    <button class="submit-btn green" style="margin-bottom:20px;font-size:14px" onclick="showPage('add-restaurant')">＋ 添加餐厅</button>
+    <div id="restaurantList"></div>
+  </div>
+</div>
+
+<!-- ══ ADD RESTAURANT PAGE ══ -->
+<div class="page" id="page-add-restaurant">
+  <div class="inner">
+    <div class="page-title">添加餐厅</div>
+    <div class="page-sub">填写餐厅信息</div>
+    <div class="add-recipe-form">
+      <div>
+        <div class="form-label">餐厅名称 *</div>
+        <input class="form-input" id="restName" placeholder="例如：老王家小炒" />
+      </div>
+      <div>
+        <div class="form-label">菜系/类型</div>
+        <input class="form-input" id="restType" placeholder="例如：川菜、粤菜、烧烤..." />
+      </div>
+      <div>
+        <div class="form-label">备注</div>
+        <textarea class="form-input" id="restNotes" placeholder="例如：价格实惠、环境好..."></textarea>
+      </div>
+      <button class="submit-btn green" onclick="saveRestaurant()">💾 保存餐厅</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESTAURANT DETAIL PAGE ══ -->
+<div class="page" id="page-restaurant-detail">
+  <div class="inner">
+    <div class="restaurant-detail-name" id="detailRestName"></div>
+    <div style="font-size:13px;color:#888" id="detailRestType"></div>
+    <div style="font-size:13px;color:#bbb;margin-top:4px" id="detailRestNotes"></div>
+
+    <div class="restaurant-detail-section">
+      <div class="restaurant-detail-label">常点菜品</div>
+      <div class="add-dish-row">
+        <input class="main-input" id="dishInput" placeholder="添加常点菜品..." onkeydown="if(event.key==='Enter') addDish()" />
+        <button class="green-btn" onclick="addDish()">+</button>
+      </div>
+      <div class="dish-list" id="dishList"></div>
+    </div>
+
+    <div class="restaurant-detail-section">
+      <div class="restaurant-detail-label">菜品照片</div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoUpload(event)" />
+      <button class="submit-btn green" style="font-size:14px;margin-bottom:16px" onclick="document.getElementById('photoInput').click()">
+        📷 拍照 / 选择照片
+      </button>
+      <div id="uploadStatus" style="font-size:13px;color:#27ae60;margin-bottom:12px;display:none"></div>
+      <div id="photoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    </div>
   </div>
 </div>
 
@@ -558,6 +694,191 @@
     renderFavorites();
   }
 
+  // ── Restaurants ──
+  const REST_STORAGE = 'restaurant_list';
+  let currentRestIdx = null;
+
+  function getRestaurants() {
+    try { return JSON.parse(localStorage.getItem(REST_STORAGE) || '[]'); } catch { return []; }
+  }
+  function saveRestaurants(list) {
+    localStorage.setItem(REST_STORAGE, JSON.stringify(list));
+  }
+
+  function saveRestaurant() {
+    const name = document.getElementById('restName').value.trim();
+    if (!name) { alert('请填写餐厅名称'); return; }
+    const type = document.getElementById('restType').value.trim();
+    const notes = document.getElementById('restNotes').value.trim();
+    const list = getRestaurants();
+    list.unshift({ name, type, notes, dishes: [], date: new Date().toLocaleDateString('zh-CN') });
+    saveRestaurants(list);
+    document.getElementById('restName').value = '';
+    document.getElementById('restType').value = '';
+    document.getElementById('restNotes').value = '';
+    showPage('restaurants');
+    renderRestaurants();
+  }
+
+  function renderRestaurants() {
+    const list = getRestaurants();
+    const el = document.getElementById('restaurantList');
+    if (!list.length) {
+      el.innerHTML = `<div class="restaurant-empty"><div class="restaurant-empty-icon">🏪</div>还没有添加餐厅<br>点击上方按钮添加常去的饭馆</div>`;
+      return;
+    }
+    el.innerHTML = '';
+    list.forEach((r, i) => {
+      const card = document.createElement('div');
+      card.className = 'restaurant-card';
+      const dishesHtml = r.dishes && r.dishes.length
+        ? `<div class="dish-tags-row">${r.dishes.map(d => `<span class="dish-tag">${d}</span>`).join('')}</div>`
+        : `<div style="font-size:12px;color:#ccc;margin-top:6px">暂无常点菜品，点击进入添加</div>`;
+      card.innerHTML = `
+        <div class="restaurant-card-name">🏪 ${r.name}${r.type ? `<span class="custom-card-badge">${r.type}</span>` : ''}</div>
+        ${r.notes ? `<div style="font-size:12px;color:#aaa;margin-bottom:4px">${r.notes}</div>` : ''}
+        ${dishesHtml}
+        <button class="restaurant-card-del" onclick="event.stopPropagation();deleteRestaurant(${i})">×</button>
+      `;
+      card.onclick = () => openRestaurant(i);
+      el.appendChild(card);
+    });
+  }
+
+  function deleteRestaurant(i) {
+    if (!confirm('确定删除这家餐厅吗？')) return;
+    const list = getRestaurants();
+    list.splice(i, 1);
+    saveRestaurants(list);
+    renderRestaurants();
+  }
+
+  function openRestaurant(i) {
+    currentRestIdx = i;
+    const list = getRestaurants();
+    const r = list[i];
+    document.getElementById('detailRestName').textContent = '🏪 ' + r.name;
+    document.getElementById('detailRestType').textContent = r.type || '';
+    document.getElementById('detailRestNotes').textContent = r.notes || '';
+    renderDishes(r.dishes || []);
+    renderPhotos(r.photos || []);
+    document.getElementById('uploadStatus').style.display = 'none';
+    showPage('restaurant-detail');
+  }
+
+  // ── Photos ──
+  function renderPhotos(photos) {
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    photos.forEach((p, i) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;';
+      wrap.innerHTML = `
+        <img src="${p.url}" style="width:100%;height:100%;object-fit:cover;" />
+        <button onclick="deletePhoto(${i})" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+        ${p.dish ? `<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.45);color:#fff;font-size:11px;padding:3px 6px;text-align:center;">${p.dish}</div>` : ''}
+      `;
+      grid.appendChild(wrap);
+    });
+  }
+
+  async function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const status = document.getElementById('uploadStatus');
+    status.style.display = 'block';
+    status.textContent = '⏳ 上传中...';
+
+    // 压缩图片为 base64
+    const base64 = await compressImage(file, 800);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: base64, folder: 'restaurant-photos' })
+      });
+      const result = await res.json();
+      if (result.error) throw new Error(result.error);
+
+      // 询问菜名
+      const dish = prompt('这道菜叫什么？（可留空）') || '';
+
+      const list = getRestaurants();
+      if (!list[currentRestIdx].photos) list[currentRestIdx].photos = [];
+      list[currentRestIdx].photos.unshift({ url: result.url, dish, date: new Date().toLocaleDateString('zh-CN') });
+      saveRestaurants(list);
+      renderPhotos(list[currentRestIdx].photos);
+
+      status.textContent = '✅ 上传成功！';
+      setTimeout(() => { status.style.display = 'none'; }, 2000);
+    } catch (e) {
+      status.textContent = '❌ 上传失败：' + e.message;
+    }
+
+    event.target.value = '';
+  }
+
+  function deletePhoto(i) {
+    if (!confirm('删除这张照片？')) return;
+    const list = getRestaurants();
+    list[currentRestIdx].photos.splice(i, 1);
+    saveRestaurants(list);
+    renderPhotos(list[currentRestIdx].photos);
+  }
+
+  function compressImage(file, maxSize) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+          else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderDishes(dishes) {
+    const el = document.getElementById('dishList');
+    el.innerHTML = '';
+    dishes.forEach((d, i) => {
+      const span = document.createElement('span');
+      span.className = 'dish-item';
+      span.innerHTML = `${d} <button class="remove-btn" onclick="removeDish(${i})">×</button>`;
+      el.appendChild(span);
+    });
+  }
+
+  function addDish() {
+    const val = document.getElementById('dishInput').value.trim();
+    if (!val) return;
+    const list = getRestaurants();
+    if (!list[currentRestIdx].dishes) list[currentRestIdx].dishes = [];
+    if (!list[currentRestIdx].dishes.includes(val)) {
+      list[currentRestIdx].dishes.push(val);
+      saveRestaurants(list);
+      renderDishes(list[currentRestIdx].dishes);
+    }
+    document.getElementById('dishInput').value = '';
+  }
+
+  function removeDish(i) {
+    const list = getRestaurants();
+    list[currentRestIdx].dishes.splice(i, 1);
+    saveRestaurants(list);
+    renderDishes(list[currentRestIdx].dishes);
+  }
+
   // ── Quick tags ──
   const QUICK_DISHES = ['宫保鸡丁','红烧肉','番茄炒蛋','麻婆豆腐','糖醋排骨','清蒸鱼','回锅肉','蛋炒饭'];
   const tagsEl = document.getElementById('quickTags');
@@ -575,6 +896,7 @@
     document.getElementById('page-' + name).classList.add('active');
     document.getElementById('backBtn').style.display = name === 'home' ? 'none' : 'flex';
     if (name === 'favorites') renderFavorites();
+    if (name === 'restaurants') renderRestaurants();
     window.scrollTo(0, 0);
   }
 
